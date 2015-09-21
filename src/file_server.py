@@ -14,31 +14,20 @@ def _get_mounted_volumes():
     for volume in restart_args['volumes']:
         if volume == '/var/run/docker.sock':
             continue
-        
+
         volumes.append(restart_args['volumes'][volume])
-    
+
     return volumes
 
 
 def _generate_links_for_volumes(volumes):
-    def find_unique_key(dictionary, key, is_file=False):
-        if key not in dictionary:
-            return key
-        
-        prefix, suffix = os.path.splitext(key) if is_file else (key, '')
-        counter = 1
-        
-        while (prefix + str(counter) + suffix) in dictionary:
-            counter += 1
-        
-        return "{prefix}_{counter}{suffix}".format(**locals())
-        
     links = {}
     for volume in volumes:
         name = os.path.split(volume.rstrip('/'))[-1]
-        link_target = find_unique_key(links, name, os.path.isfile(volume))
-        links[link_target] = volume
-    
+        if name in links:
+            continue
+        links[name] = volume
+
     for link in links:
         os.symlink(links[link], link)
 
@@ -46,13 +35,14 @@ def _generate_links_for_volumes(volumes):
 if __name__ == "__main__":
     os.makedirs(HOSTING_PATH, exist_ok=True)
     os.chdir(HOSTING_PATH)
-    
+
     volumes = _get_mounted_volumes()
     if len(volumes) == 0:
-        raise RuntimeError('No volumes provided')
+        with open(os.path.join(HOSTING_PATH, 'NO SHARES PROVIDED.txt'), 'w') as f:
+            f.write("Please specify what files you want to share with -v option to `armada run` command.")
     if len(volumes) == 1 and os.path.isdir(volumes[0]):
         os.chdir(volumes[0])
     else:
         _generate_links_for_volumes(volumes)
-    
+
     http.server.test(HandlerClass=http.server.SimpleHTTPRequestHandler,port=HTTP_LISTEN_PORT,bind="")
