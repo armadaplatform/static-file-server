@@ -24,8 +24,6 @@ def _generate_links_for_volumes(volumes):
     links = {}
     for volume in volumes:
         name = os.path.split(volume.rstrip('/'))[-1]
-        if name in links:
-            continue
         links[name] = volume
 
     for link in links:

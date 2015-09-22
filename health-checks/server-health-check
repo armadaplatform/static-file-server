@@ -21,14 +21,13 @@ def _get_mounted_volumes():
 volumes = _get_mounted_volumes()
 
 if len(volumes) == 0:
-    print('There were no mounted volumes. Consider adding some -v options to actually serve some files')
+    print('There were no mounted volumes. Consider adding some -v options to actually serve some files.')
     sys.exit(1)
 
 counter = Counter()
 
 for volume in volumes:
-    name = name = os.path.split(volume.rstrip('/'))[-1]
-
+    name = os.path.split(volume.rstrip('/'))[-1]
     counter[name] += 1
 
 found_duplicates = False
@@ -40,7 +39,7 @@ for entry in counter:
 
 if found_duplicates:
     print()
-    print('Multiple shares have exactly same name, so only first occurrence is actually exposed. Consider sharing'
+    print('Multiple shares have exactly the same name, so only first occurrence is actually exposed. Consider sharing'
           ' symbolic link with distinct name instead.')
     sys.exit(1)
 
